@@ -58,15 +58,15 @@ class ReprojectGeometries:
 
 class Intersection:
 
-        def __init__(self, geodataframe1: gpd.GeoDataFrame, geodataframe2: gpd.GeoDataFrame):
-                self.geodataframe1 = MakeValidGeometries(geodataframe=geodataframe1)._improve_geometry()
-                self.geodataframe2 = MakeValidGeometries(geodataframe=geodataframe2)._improve_geometry()
+        def __init__(self, geodataframe1: gpd.GeoDataFrame, geodataframe2: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+                self.geodataframe1 = geodataframe1
+                self.geodataframe2 = geodataframe2
         
 
         def _intersection(self) -> gpd.GeoDataFrame:
                 intersect = gpd.overlay(self.geodataframe1, self.geodataframe2, how='intersection')
 
-                return MakeValidGeometries(geodataframe=intersect)._improve_geometry()
+                return intersect
 
 
 

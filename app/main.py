@@ -1,31 +1,31 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
-from gisOperations import *
-from dataConstrutor import PointToGeoDataFrame, GeoDataFrameToJson
-
-from pydantic import BaseModel
-
-
-class PointBuffer(BaseModel):
-    lat: float
-    long: float
-    area_buffer:float
-
+from scripts.gisOperations import *
+from scripts.dataConstrutor import *
 
 app = FastAPI()
 
-@app.get("/")
-async def main():
-    return {"message": "Hello World"}
+raster = RasterData()._data()
+
+
+@app.post("/point-intersection")
+async def point_intersection(data:Request):
+    json_data = await data.json()
+    json_data = JsonToGeoDataFrame(points=json_data)._data()
+
+    intersection = Intersection(geodataframe1=json_data, geodataframe2=raster)._intersection()
+
+    return GeoDataFrameToJson(geodataframe=intersection)._json()
 
 
 @app.post("/buffer")
-async def buffer(point_buffer:PointBuffer):
+async def buffer(data:Request):
 
-    point_geodataframe = PointToGeoDataFrame(lat=point_buffer.lat, long=point_buffer.long)._make_geodataframe()
+    json_data = await data.json()
+    json_data = JsonToGeoDataFrame(points=json_data)._data()
 
-    buffer_geometry = Buffer(geodataframe=point_geodataframe, area_buffer=point_buffer.area_buffer)._buffer_area()
+    buffer_geometry = Buffer(geodataframe=json_data, area_buffer=0.0005)._buffer_area()
     
     return GeoDataFrameToJson(geodataframe=buffer_geometry)._json()
 
